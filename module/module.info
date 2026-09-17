@@ -1,0 +1,6 @@
+id=webmin-homelab-monitor
+desc=Webmin Homelab Monitor
+name=Webmin Homelab Monitor
+longdesc=Custom Webmin monitoring and health dashboard for homelab servers.
+version=1.0
+category=hardware
