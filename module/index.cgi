@@ -24,7 +24,6 @@ if (!-f $config_file) {
 }
 require $config_file;
 
-
 sub read_cpu {
     open(my $fh, '<', '/proc/stat') or return undef;
     my $line = <$fh>;
@@ -65,7 +64,48 @@ sub cpu_usage {
     return $usage;
 }
 
- sub raid_info {     my $array = $config{raid_array} || "md0"; my $base = "/sys/block/$array/md";      return ("N/A", "N/A", "N/A", 0, "Unknown", "") unless -d $base;      my $read_file = sub {         my ($name) = @_;         open(my $fh, "<", "$base/$name") or return undef;         my $value = <$fh>;         close($fh);         return undef unless defined $value;         chomp($value);         return $value;     };      my $state = $read_file->("array_state") // "N/A";     my $level = $read_file->("level") // "N/A";     my $disks = $read_file->("raid_disks") // "N/A";      my $active = 0;      if ($disks =~ /^\d+$/) {         for my $dev (@{$config{raid_devices} || []}) {             my $dev_state = $read_file->("dev-$dev/state");             $active++ if defined $dev_state && $dev_state =~ /\bin_sync\b/;         }     }      my $status = "Attention";      if ($state eq "clean" && $disks =~ /^\d+$/ && $active == $disks) {         $status = "Operational";     }      my $note = ($level eq "raid0") ? "RAID0 provides no fault tolerance" : "";      return ($state, $level, $disks, $active, $status, $note); } 
+sub raid_info {
+    return ("Disabled", "N/A", "N/A", 0, "Disabled", "")
+        unless $config{raid_enabled};
+
+    my $array = $config{raid_array} || "md0";
+    my $base = "/sys/block/$array/md";
+
+    return ("N/A", "N/A", "N/A", 0, "N/A", "") unless -d $base;
+
+    my $read_file = sub {
+        my ($name) = @_;
+        open(my $fh, '<', "$base/$name") or return undef;
+        my $value = <$fh>;
+        close($fh);
+        return undef unless defined $value;
+        chomp($value);
+        return $value;
+    };
+
+    my $state = $read_file->("array_state") // "N/A";
+    my $level = $read_file->("level") // "N/A";
+    my $disks = $read_file->("raid_disks") // "N/A";
+
+    my $active = 0;
+
+    if ($disks =~ /^\d+$/) {
+        for my $dev (@{$config{raid_devices} || []}) {
+            my $dev_state = $read_file->("dev-$dev/state");
+            $active++ if defined $dev_state && $dev_state =~ /\bin_sync\b/;
+        }
+    }
+
+    my $status = "Attention";
+    if ($state eq "clean" && $disks =~ /^\d+$/ && $active == $disks) {
+        $status = "Operational";
+    }
+
+    my $note = ($level eq "raid0") ? "RAID0 provides no fault tolerance" : "";
+
+    return ($state, $level, $disks, $active, $status, $note);
+}
+
 sub memory_usage {
     open(my $fh, '<', '/proc/meminfo') or return "N/A";
 
@@ -114,6 +154,7 @@ sub uptime {
 
 sub gpu_usage {
     return "N/A" unless $config{gpu_stats_command};
+
     my $cmd = $config{gpu_stats_command};
     my $output = `$cmd 2>/dev/null`;
     chomp($output);
@@ -126,20 +167,6 @@ sub gpu_usage {
 
     return $value;
 }
-
-my $cpu = cpu_usage();
-my $memory = memory_usage();
-my $gpu = gpu_usage();
-my $up = uptime();
-my $cpu_status =
-    ($cpu eq "N/A") ? "N/A" :
-    ($cpu >= 90) ? "Attention" :
-    "Operational";
-
-my $memory_status =
-    ($memory eq "N/A") ? "N/A" :
-    ($memory >= 90) ? "Attention" :
-    "Operational";
 
 sub format_bytes {
     my ($bytes) = @_;
@@ -166,32 +193,27 @@ sub storage_info {
     my @lines = <$fh>;
     close($fh);
 
-    return ("N/A", "N/A", "N/A", "N/A", "N/A")
-        unless @lines >= 2;
+    return ("N/A", "N/A", "N/A", "N/A", "N/A") unless @lines >= 2;
 
     my @fields = split(/\s+/, $lines[-1]);
 
-    return ("N/A", "N/A", "N/A", "N/A", "N/A")
-        unless @fields >= 6;
+    return ("N/A", "N/A", "N/A", "N/A", "N/A") unless @fields >= 6;
 
-    my ($size, $used, $avail, $percent) =
-        @fields[1, 2, 3, 4];
-
+    my ($size, $used, $avail, $percent) = @fields[1, 2, 3, 4];
     $percent =~ s/%//;
 
     my $status = "Operational";
-
     if ($percent =~ /^\d+$/ && $percent >= 80) {
         $status = "Attention";
     }
 
     return ($size, $used, $avail, $percent, $status);
 }
+
 sub smart_health {
     my ($device) = @_;
 
-    open(my $fh, "-|", "smartctl", "-H", $device)
-        or return "N/A";
+    open(my $fh, "-|", "smartctl", "-H", $device) or return "N/A";
 
     my @lines = <$fh>;
     close($fh);
@@ -199,7 +221,6 @@ sub smart_health {
     for my $line (@lines) {
         if ($line =~ /overall-health.*:\s*(\S+)/i) {
             my $result = uc($1);
-
             return "Operational" if $result eq "PASSED";
             return "Attention";
         }
@@ -207,8 +228,10 @@ sub smart_health {
 
     return "N/A";
 }
+
 sub docker_info {
-    return ("N/A", []) unless $config{docker_enabled};
+    return ("Disabled", []) unless $config{docker_enabled};
+
     open(my $fh, "-|", "docker", "ps", "-a", "--format", "{{.Names}}|{{.Status}}")
         or return ("N/A", []);
 
@@ -230,40 +253,34 @@ sub docker_info {
     close($fh);
 
     return ("N/A", []) unless @containers;
-
     return ($overall, \@containers);
 }
+
 sub tailscale_info {
-    return ("N/A", "N/A", 0, "N/A") unless $config{tailscale_enabled};
+    return ("Disabled", "N/A", 0, "N/A") unless $config{tailscale_enabled};
+
     my $status_output = `tailscale status 2>/dev/null`;
     my $ip = `tailscale ip -4 2>/dev/null`;
-
     chomp($ip);
 
-    return ("N/A", "N/A", 0, "N/A")
-        if !$status_output || !$ip;
+    return ("N/A", "N/A", 0, "N/A") if !$status_output || !$ip;
 
-    my $peer_count = 0;
+    my $device_count = 0;
     my $funnel = "Disabled";
 
     for my $line (split(/\n/, $status_output)) {
-        $peer_count++ if $line =~ /^100\./;
-
-        if ($line =~ /# Funnel on:/) {
-            $funnel = "Enabled";
-        }
+        $device_count++ if $line =~ /^100\./;
+        $funnel = "Enabled" if $line =~ /# Funnel on:/;
     }
 
-    my $status = "Operational";
-
-    return ($status, $ip, $peer_count, $funnel);
+    return ("Operational", $ip, $device_count, $funnel);
 }
-sub ufw_info {
-    return ("N/A", "N/A", "N/A", 0, "N/A") unless $config{ufw_enabled};
-    my $output = `ufw status verbose 2>/dev/null`;
 
-    return ("N/A", "N/A", "N/A", 0, "N/A")
-        unless $output;
+sub ufw_info {
+    return ("Disabled", "N/A", "N/A", 0, "N/A") unless $config{ufw_enabled};
+
+    my $output = `ufw status verbose 2>/dev/null`;
+    return ("N/A", "N/A", "N/A", 0, "N/A") unless $output;
 
     my $status = "N/A";
     my $logging = "N/A";
@@ -283,17 +300,29 @@ sub ufw_info {
 
         $allow_rules++ if $line =~ /\bALLOW IN\b/;
 
-        if ($line =~ /^22\/tcp\s+ALLOW IN\s+192\.168\./ ||
-            $line =~ /^22\/tcp on tailscale0\s+ALLOW IN/) {
+        # Mark SSH as restricted when it is bound to a private RFC1918 source
+        # or the Tailscale interface. This covers common 10/8, 172.16/12,
+        # and 192.168/16 homelab networks.
+        if (
+            $line =~ /^22\/tcp\s+ALLOW IN\s+10\./ ||
+            $line =~ /^22\/tcp\s+ALLOW IN\s+192\.168\./ ||
+            $line =~ /^22\/tcp\s+ALLOW IN\s+172\.(?:1[6-9]|2\d|3[01])\./ ||
+            $line =~ /^22\/tcp on tailscale0\s+ALLOW IN/
+        ) {
             $ssh_scope = "Restricted";
         }
     }
 
     return ($status, $logging, $incoming, $allow_rules, $ssh_scope);
 }
+
 sub backup_info {
+    return ("Disabled", "N/A", "N/A", "N/A", "Disabled")
+        unless $config{backup_enabled};
+
     my $timer = $config{backup_timer} || "homelab-backup.timer";
     my $service = $config{backup_service} || "homelab-backup.service";
+
     my $timer_active = `systemctl is-active $timer 2>/dev/null`;
     chomp($timer_active);
 
@@ -307,7 +336,6 @@ sub backup_info {
     chomp($next_run);
 
     my $status = "Operational";
-
     if ($timer_active ne "active" || $result ne "success") {
         $status = "Attention";
     }
@@ -315,13 +343,13 @@ sub backup_info {
     $last_run = "N/A" unless $last_run;
 
     my $next_display = "N/A";
-
     if ($next_run =~ /^(.+?\s+\S+\s+\S+\s+\S+)\s+\S+\s+/) {
         $next_display = $1;
     }
 
     return ($status, $last_run, $next_display, $result, $timer_active);
 }
+
 sub weather_code_text {
     my ($code) = @_;
 
@@ -339,10 +367,16 @@ sub weather_code_text {
 
     return "Unknown";
 }
+
 sub weather_info {
-    return ("N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A") unless $config{weather_enabled};
+    return ("Disabled", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A")
+        unless $config{weather_enabled};
+
     my $lat = $config{weather_latitude};
     my $lon = $config{weather_longitude};
+
+    return ("N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A")
+        unless defined $lat && defined $lon;
 
     my $url =
         "https://api.open-meteo.com/v1/forecast" .
@@ -356,11 +390,9 @@ sub weather_info {
 
     my $json = `curl -fsS '$url' 2>/dev/null`;
 
-    return ("N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A")
-        unless $json;
+    return ("N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A") unless $json;
 
     my $data;
-
     eval {
         require JSON::PP;
         $data = JSON::PP::decode_json($json);
@@ -381,7 +413,11 @@ sub weather_info {
 
     return ($temp, $feels, $humidity, $code, $wind, $high, $low, $rain);
 }
+
 sub network_info {
+    return ("Disabled", "N/A", "N/A", "Disabled", "N/A", "Disabled", "Disabled", "N/A", "N/A")
+        unless $config{network_enabled};
+
     my $interface = $config{network_interface} || "eth0";
     my $gateway = $config{gateway} || "192.168.1.1";
     my $internet_target = $config{internet_target} || "1.1.1.1";
@@ -421,8 +457,7 @@ sub network_info {
     my $dns_test = `/usr/bin/getent hosts $dns_test_host 2>/dev/null`;
     my $dns_status = $dns_test ? "Operational" : "Attention";
 
-    my $interface_status =
-        ($link_state eq "up") ? "Operational" : "Attention";
+    my $interface_status = ($link_state eq "up") ? "Operational" : "Attention";
 
     return (
         $interface_status,
@@ -436,43 +471,86 @@ sub network_info {
         $packet_loss
     );
 }
+
 sub overall_health {
     my (@statuses) = @_;
 
     for my $status (@statuses) {
+        next if defined $status && $status eq "Disabled";
+
         return "Attention"
             if defined $status && $status eq "Attention";
     }
 
     for my $status (@statuses) {
+        next if defined $status && $status eq "Disabled";
+
         return "Unknown"
             if !defined $status || $status eq "N/A";
     }
 
     return "Healthy";
 }
+
 sub health_class {
     my ($value) = @_;
-    return "unknown" if $value eq "N/A";
+
+    return "disabled" if defined $value && $value eq "Disabled";
+    return "unknown" if !defined $value || $value eq "N/A";
     return "warning" if $value eq "Attention";
     return "good";
 }
+
+my $cpu = cpu_usage();
+my $memory = memory_usage();
+my $gpu = gpu_usage();
+my $up = uptime();
+
+my $cpu_status =
+    ($cpu eq "N/A") ? "N/A" :
+    ($cpu >= 90) ? "Attention" :
+    "Operational";
+
+my $memory_status =
+    ($memory eq "N/A") ? "N/A" :
+    ($memory >= 90) ? "Attention" :
+    "Operational";
+
 my ($raid_state, $raid_level, $raid_disks, $raid_active, $raid_status, $raid_note) = raid_info();
 my ($storage_size, $storage_used, $storage_avail, $storage_percent, $storage_status) = storage_info();
-my @smart_results;
-for my $device (@{$config{smart_devices} || []}) {
-    push @smart_results, [$device, smart_health($device)];
-}
 
-my $smart_status = "N/A";
-if (@smart_results) {
-    $smart_status = "Operational";
-    for my $entry (@smart_results) {
-        if ($entry->[1] eq "Attention") { $smart_status = "Attention"; last; }
-        if ($entry->[1] eq "N/A" && $smart_status ne "Attention") { $smart_status = "N/A"; }
+my @smart_results;
+my $smart_status;
+
+if (!$config{smart_enabled}) {
+    $smart_status = "Disabled";
+} else {
+    for my $device (@{$config{smart_devices} || []}) {
+        push @smart_results, [$device, smart_health($device)];
+    }
+
+    $smart_status = "N/A";
+
+    if (@smart_results) {
+        $smart_status = "Operational";
+
+        for my $entry (@smart_results) {
+            if ($entry->[1] eq "Attention") {
+                $smart_status = "Attention";
+                last;
+            }
+
+            if ($entry->[1] eq "N/A" && $smart_status ne "Attention") {
+                $smart_status = "N/A";
+            }
+        }
     }
 }
-my $smart_html = join("<br>", map { $_->[0] . ": " . $_->[1] } @smart_results);
+
+my $smart_html = @smart_results
+    ? join("<br>", map { $_->[0] . ": " . $_->[1] } @smart_results)
+    : ($smart_status eq "Disabled" ? "SMART monitoring disabled" : "No SMART devices configured");
+
 my ($docker_status, $docker_containers) = docker_info();
 my $docker_html = "";
 
@@ -480,9 +558,17 @@ for my $container (@$docker_containers) {
     my ($name, $status) = @$container;
     $docker_html .= "$name: $status<br>";
 }
-my ($tailscale_status, $tailscale_ip, $tailscale_peers, $tailscale_funnel) = tailscale_info();
+
+if ($docker_html eq "") {
+    $docker_html = $docker_status eq "Disabled"
+        ? "Docker monitoring disabled"
+        : "No container information available";
+}
+
+my ($tailscale_status, $tailscale_ip, $tailscale_devices, $tailscale_funnel) = tailscale_info();
 my ($ufw_status, $ufw_logging, $ufw_incoming, $ufw_allow_rules, $ufw_ssh_scope) = ufw_info();
-my ($backup_status, $backup_last, $backup_next, $backup_result, $backup_timer) = backup_info();
+my ($backup_status, $backup_last, $backup_next, $backup_result, $backup_timer_state) = backup_info();
+
 my (
     $weather_temp,
     $weather_feels,
@@ -495,9 +581,10 @@ my (
 ) = weather_info();
 
 my $weather_condition =
-    ($weather_code eq "N/A")
-    ? "N/A"
-    : weather_code_text($weather_code);
+    ($weather_code eq "Disabled") ? "Disabled" :
+    ($weather_code eq "N/A") ? "N/A" :
+    weather_code_text($weather_code);
+
 my (
     $network_interface_status,
     $network_interface,
@@ -509,7 +596,6 @@ my (
     $network_latency,
     $network_packet_loss
 ) = network_info();
-
 
 my $health = overall_health(
     $cpu_status,
@@ -549,7 +635,6 @@ print <<'HTML';
 }
 .hlm-card {
     color: #222;
-    color: #222;
     border: 1px solid #d8d8d8;
     border-radius: 10px;
     padding: 18px;
@@ -569,6 +654,7 @@ print <<'HTML';
 .hlm-good { color: #188038; }
 .hlm-warning { color: #b06000; }
 .hlm-unknown { color: #777; }
+.hlm-disabled { color: #777; }
 .hlm-section {
     margin-top: 28px;
 }
@@ -587,24 +673,22 @@ print qq{
 <p>$dashboard_description</p>
 
 <div class="hlm-grid">
-};
 
-print qq{
 <div class="hlm-card">
 <h3>CPU</h3>
-<div class="hlm-value">$cpu% </div>
+<div class="hlm-value">$cpu%</div>
 <p>Current processor utilization</p>
 </div>
 
 <div class="hlm-card">
 <h3>Memory</h3>
-<div class="hlm-value">$memory% </div>
+<div class="hlm-value">$memory%</div>
 <p>Current memory utilization</p>
 </div>
 
 <div class="hlm-card">
 <h3>GPU</h3>
-<div class="hlm-value">$gpu% </div>
+<div class="hlm-value">$gpu%</div>
 <p>Current GPU engine utilization</p>
 </div>
 
@@ -616,20 +700,18 @@ print qq{
 
 <div class="hlm-card">
 <h3>Overall Health</h3>
-<div class="hlm-value hlm-status @{[health_class($health)]}">$health</div>
-<p>Based on system, storage, services, security, backup, and network health</p>
+<div class="hlm-value hlm-status hlm-@{[health_class($health)]}">$health</div>
+<p>Based on enabled system, storage, services, security, backup, and network checks</p>
 </div>
+
 </div>
-};
-print qq{
+
 <div class="hlm-section">
 <h2>Infrastructure Health</h2>
 
 <div class="hlm-placeholder">
 <strong>RAID:</strong>
-<div class="hlm-status @{[health_class($raid_status)]}">
-$raid_status
-</div>
+<div class="hlm-status hlm-@{[health_class($raid_status)]}">$raid_status</div>
 <div>
 Level: $raid_level<br>
 Devices: $raid_active/$raid_disks active<br>
@@ -638,16 +720,15 @@ Array state: $raid_state
 };
 
 if ($raid_note ne "") {
-    print qq{
-<div class="hlm-warning">$raid_note</div>
-};
+    print qq{<div class="hlm-warning">$raid_note</div>};
 }
+
 print qq{
+</div>
+
 <div class="hlm-placeholder">
 <strong>Storage:</strong>
-<div class="hlm-status @{[health_class($storage_status)]}">
-$storage_status
-</div>
+<div class="hlm-status hlm-@{[health_class($storage_status)]}">$storage_status</div>
 <div>
 Mount: $storage_mount_display<br>
 Capacity: @{[format_bytes($storage_size)]}<br>
@@ -656,40 +737,29 @@ Available: @{[format_bytes($storage_avail)]}<br>
 Usage: $storage_percent%
 </div>
 </div>
-};
 
-print qq{
 <div class="hlm-placeholder">
 <strong>SMART:</strong>
-<div class="hlm-status @{[health_class($smart_status)]}">
-$smart_status
+<div class="hlm-status hlm-@{[health_class($smart_status)]}">$smart_status</div>
+<div>$smart_html</div>
 </div>
-<div>
-$smart_html
-</div>
-</div>
-};
 
-print qq{
 <div class="hlm-placeholder">
 <strong>Docker Services:</strong>
-<div class="hlm-status @{[health_class($docker_status)]}">
-$docker_status
+<div class="hlm-status hlm-@{[health_class($docker_status)]}">$docker_status</div>
+<div>$docker_html</div>
 </div>
-<div>
-$docker_html
+
 </div>
-</div>
-};
-print qq{
+
 <div class="hlm-section">
 <h2>Networking &amp; Security</h2>
 
 <div class="hlm-placeholder">
 <strong>Network Diagnostics:</strong>
+<div class="hlm-status hlm-@{[health_class($network_interface_status)]}">$network_interface_status</div>
 <div>
 Interface: $network_interface<br>
-Interface status: $network_interface_status<br>
 LAN IP: $network_lan_ip<br>
 Gateway: $network_gateway ($network_gateway_status)<br>
 Internet: $network_internet_status<br>
@@ -701,21 +771,17 @@ Packet loss: $network_packet_loss%
 
 <div class="hlm-placeholder">
 <strong>Tailscale:</strong>
-<div class="hlm-status @{[health_class($tailscale_status)]}">
-$tailscale_status
-</div>
+<div class="hlm-status hlm-@{[health_class($tailscale_status)]}">$tailscale_status</div>
 <div>
 Server IP: $tailscale_ip<br>
-Peers visible: $tailscale_peers<br>
+Tailnet devices visible: $tailscale_devices<br>
 Funnel: $tailscale_funnel
 </div>
 </div>
 
 <div class="hlm-placeholder">
 <strong>UFW Firewall:</strong>
-<div class="hlm-status @{[health_class($ufw_status)]}">
-$ufw_status
-</div>
+<div class="hlm-status hlm-@{[health_class($ufw_status)]}">$ufw_status</div>
 <div>
 Logging: $ufw_logging<br>
 Default incoming: $ufw_incoming<br>
@@ -726,15 +792,13 @@ SSH exposure: $ufw_ssh_scope
 
 <div class="hlm-placeholder">
 <strong>Backup Status:</strong>
-<div class="hlm-status @{[health_class($backup_status)]}">
-$backup_status
-</div>
+<div class="hlm-status hlm-@{[health_class($backup_status)]}">$backup_status</div>
 <div>
 Job: $backup_label<br>
 Last result: $backup_result<br>
 Last completed: $backup_last<br>
 Next scheduled: $backup_next<br>
-Timer: $backup_timer
+Timer: $backup_timer_state
 </div>
 </div>
 
@@ -745,9 +809,7 @@ Timer: $backup_timer
 
 <div class="hlm-placeholder">
 <strong>$weather_location:</strong>
-<div class="hlm-status good">
-$weather_condition
-</div>
+<div class="hlm-status hlm-@{[health_class($weather_condition)]}">$weather_condition</div>
 <div>
 Temperature: $weather_temp&deg;F<br>
 Feels like: $weather_feels&deg;F<br>
@@ -760,11 +822,9 @@ Rain chance: $weather_rain%
 </div>
 
 </div>
-};
 
-print <<'HTML';
 </div>
-HTML
+};
 
 ui_print_footer("", undef, 1);
 
