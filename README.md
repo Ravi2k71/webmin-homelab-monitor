@@ -189,14 +189,14 @@ Copy the contents of the `module/` directory to your Webmin installation.
 A typical location is:
 
 ```bash
-/usr/share/webmin/homelab-monitoring/
+/usr/share/webmin/webmin-homelab-monitor/
 ```
 
 For example:
 
 ```bash
-sudo mkdir -p /usr/share/webmin/homelab-monitoring
-sudo cp module/* /usr/share/webmin/homelab-monitoring/
+sudo mkdir -p /usr/share/webmin/webmin-homelab-monitor
+sudo cp module/* /usr/share/webmin/webmin-homelab-monitor/
 ```
 
 ---
