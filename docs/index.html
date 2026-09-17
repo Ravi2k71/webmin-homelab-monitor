@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Webmin Homelab Monitor Demo</title>
+<style>
+:root{
+  --bg:#f5f7fa;
+  --card:#ffffff;
+  --text:#222;
+  --muted:#666;
+  --border:#d8d8d8;
+  --good:#188038;
+  --warn:#b06000;
+  --unknown:#777;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+.wrap{
+  max-width:1200px;
+  margin:0 auto;
+  padding:28px 18px 48px;
+}
+h1{margin-bottom:6px}
+.subtitle{
+  color:var(--muted);
+  margin-top:0;
+}
+.notice{
+  background:#fff8db;
+  border:1px solid #ead58c;
+  border-radius:10px;
+  padding:12px 14px;
+  margin:18px 0 24px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+  margin:20px 0;
+}
+.card{
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:18px;
+  background:var(--card);
+}
+.card h3{
+  margin:0 0 8px;
+  font-size:16px;
+}
+.value{
+  font-size:30px;
+  font-weight:600;
+}
+.value.small{font-size:24px}
+.status{
+  font-weight:600;
+}
+.good{color:var(--good)}
+.warning{color:var(--warn)}
+.unknown{color:var(--unknown)}
+.section{
+  margin-top:28px;
+}
+.section h2{
+  margin-bottom:12px;
+}
+.block{
+  border:1px dashed #bbb;
+  border-radius:8px;
+  padding:16px;
+  margin:10px 0;
+  background:var(--card);
+}
+.block strong.title{
+  display:block;
+  margin-bottom:6px;
+}
+.footer{
+  margin-top:30px;
+  color:var(--muted);
+  font-size:14px;
+}
+code{
+  background:#eceff3;
+  padding:2px 5px;
+  border-radius:4px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Webmin Homelab Monitor</h1>
+  <p class="subtitle">Static demonstration using fictional example data.</p>
+
+  <div class="notice">
+    <strong>Demo mode:</strong> This page is not connected to a real server.
+    All hostnames, IP addresses, services, storage values, and weather data are examples.
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>CPU</h3>
+      <div class="value">23%</div>
+      <p>Current processor utilization</p>
+    </div>
+
+    <div class="card">
+      <h3>Memory</h3>
+      <div class="value">41%</div>
+      <p>Current memory utilization</p>
+    </div>
+
+    <div class="card">
+      <h3>GPU</h3>
+      <div class="value">8%</div>
+      <p>Current GPU engine utilization</p>
+    </div>
+
+    <div class="card">
+      <h3>Uptime</h3>
+      <div class="value small">12d 4h</div>
+      <p>Time since last boot</p>
+    </div>
+
+    <div class="card">
+      <h3>Overall Health</h3>
+      <div class="value status good">Healthy</div>
+      <p>Based on system, storage, services, security, backup, and network health</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Infrastructure Health</h2>
+
+    <div class="block">
+      <strong class="title">RAID</strong>
+      <div class="status good">Operational</div>
+      <div>
+        Level: RAID1<br>
+        Devices: 2/2 active<br>
+        Array state: clean
+      </div>
+    </div>
+
+    <div class="block">
+      <strong class="title">Storage</strong>
+      <div class="status good">Operational</div>
+      <div>
+        Mount: /mnt/storage<br>
+        Capacity: 4.0 TB<br>
+        Used: 1.2 TB<br>
+        Available: 2.8 TB<br>
+        Usage: 30%
+      </div>
+    </div>
+
+    <div class="block">
+      <strong class="title">SMART</strong>
+      <div class="status good">Operational</div>
+      <div>
+        /dev/sda: Operational<br>
+        /dev/sdb: Operational
+      </div>
+    </div>
+
+    <div class="block">
+      <strong class="title">Docker Services</strong>
+      <div class="status good">Operational</div>
+      <div>
+        photos-app: Up 5 days<br>
+        database: Up 5 days<br>
+        reverse-proxy: Up 5 days
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Networking &amp; Security</h2>
+
+    <div class="block">
+      <strong class="title">Network Diagnostics</strong>
+      <div>
+        Interface: eth0<br>
+        Interface status: <span class="status good">Operational</span><br>
+        LAN IP: 192.168.1.50<br>
+        Gateway: 192.168.1.1 (<span class="status good">Operational</span>)<br>
+        Internet: <span class="status good">Operational</span><br>
+        DNS: <span class="status good">Operational</span><br>
+        Latency: 18.4 ms<br>
+        Packet loss: 0%
+      </div>
+    </div>
+
+    <div class="block">
+      <strong class="title">Tailscale</strong>
+      <div class="status good">Operational</div>
+      <div>
+        Server IP: 100.64.0.10<br>
+        Tailnet devices visible: 3<br>
+        Funnel: Enabled
+      </div>
+    </div>
+
+    <div class="block">
+      <strong class="title">UFW Firewall</strong>
+      <div class="status good">Operational</div>
+      <div>
+        Logging: on (low)<br>
+        Default incoming: deny<br>
+        Allow rules: 8<br>
+        SSH exposure: Restricted
+      </div>
+    </div>
+
+    <div class="block">
+      <strong class="title">Backup Status</strong>
+      <div class="status good">Operational</div>
+      <div>
+        Job: Homelab Server Backup<br>
+        Last result: success<br>
+        Last completed: Sep 14, 2026 03:02<br>
+        Next scheduled: Sep 21, 2026 03:00<br>
+        Timer: active
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Weather</h2>
+
+    <div class="block">
+      <strong class="title">Example City, FL</strong>
+      <div class="status good">Partly Cloudy</div>
+      <div>
+        Temperature: 82°F<br>
+        Feels like: 86°F<br>
+        Humidity: 72%<br>
+        Wind: 9.8 mph<br>
+        Today's high: 87°F<br>
+        Today's low: 74°F<br>
+        Rain chance: 20%
+      </div>
+    </div>
+  </div>
+
+  <p class="footer">
+    Webmin Homelab Monitor demo · Example data only · Customize the real module for your own infrastructure.
+  </p>
+</div>
+</body>
+</html>
