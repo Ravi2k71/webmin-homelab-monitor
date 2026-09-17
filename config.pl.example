@@ -1,0 +1,45 @@
+# Webmin Homelab Monitor configuration
+# Copy this file to config.pl and customize it for your server.
+
+our %config = (
+    # Branding
+    dashboard_name        => 'Homelab Monitoring',
+    dashboard_description => 'Custom monitoring and health dashboard for a Linux homelab server.',
+
+    # GPU helper. Set to '' to disable GPU utilization collection.
+    gpu_stats_command => '/usr/local/sbin/webmin-gpu-stats',
+
+    # Linux software RAID (mdadm)
+    raid_array   => 'md0',
+    raid_devices => [qw(sda sdb)],
+
+    # Main storage mount to display
+    storage_mount => '/mnt/storage',
+
+    # SMART devices to monitor
+    smart_devices => [qw(/dev/sda /dev/sdb)],
+
+    # Backup systemd units
+    backup_label   => 'Homelab Server Backup',
+    backup_timer   => 'homelab-backup.timer',
+    backup_service => 'homelab-backup.service',
+
+    # Network diagnostics
+    network_interface => 'eth0',
+    gateway           => '192.168.1.1',
+    internet_target   => '1.1.1.1',
+    dns_test_host     => 'example.com',
+
+    # Weather (Open-Meteo). Set weather_enabled => 0 to disable.
+    weather_enabled  => 1,
+    weather_location => 'Your City, ST',
+    weather_latitude => 00.0000,
+    weather_longitude => -00.0000,
+
+    # Optional integrations. Set to 0 if not installed / not desired.
+    tailscale_enabled => 1,
+    ufw_enabled       => 1,
+    docker_enabled    => 1,
+);
+
+1;
