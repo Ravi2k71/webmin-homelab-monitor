@@ -18,10 +18,23 @@ init_config();
 
 # Load local configuration. Keep config.pl out of version control if it contains
 # private environment details. Start from config.pl.example.
+# Load local configuration.
+#
+# Prefer config.pl when the user has created one. On a fresh installation,
+# fall back to config.pl.example so the module can load without returning
+# an HTTP 500 error.
 my $config_file = "$Bin/config.pl";
+my $using_example_config = 0;
+
 if (!-f $config_file) {
-    die "Missing config.pl. Copy config.pl.example to config.pl and customize it.\n";
+    $config_file = "$Bin/config.pl.example";
+    $using_example_config = 1;
 }
+
+if (!-f $config_file) {
+    die "No configuration file found. Expected config.pl or config.pl.example.\n";
+}
+
 require $config_file;
 
 sub read_cpu {
@@ -619,7 +632,22 @@ my $weather_location = $config{weather_location} || "Configured Location";
 my $storage_mount_display = $config{storage_mount} || "/mnt/storage";
 my $backup_label = $config{backup_label} || "Homelab Server Backup";
 
-ui_print_header($dashboard_name, $dashboard_name, "", undef, 1, 1);
+if ($using_example_config) {
+    print qq{
+    <div style="
+        margin: 15px 0;
+        padding: 12px 16px;
+        border: 1px solid #d6b656;
+        border-radius: 8px;
+        background: #fff8dc;
+        color: #333;
+    ">
+        <strong>Setup required:</strong>
+        The dashboard is currently using <code>config.pl.example</code>.
+        Copy it to <code>config.pl</code> and customize the settings for your server.
+    </div>
+    };
+}
 
 print <<'HTML';
 <style>
