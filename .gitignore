@@ -1,0 +1,45 @@
+# Local / private configuration
+config.pl
+config.local.pl
+*.local
+*.private
+
+# Secrets and keys
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+authorized_keys
+
+# Backups
+*.bak
+*.bak*
+*.save
+*.old
+*.orig
+*~
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Editor / IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Runtime / generated directories
+cache/
+tmp/
+logs/
