@@ -1117,7 +1117,7 @@ syntax OK
 If installed in Webmin:
 
 ```bash
-perl -c /usr/share/webmin/homelab-monitoring/index.cgi
+perl -c /usr/share/webmin/webmin-homelab-monitor/index.cgi
 ```
 
 Then reload the module.

@@ -547,7 +547,7 @@ Live demo:
 Check:
 
 ```bash
-ls -la /usr/share/webmin/homelab-monitoring/
+ls -la /usr/share/webmin/webmin-homelab-monitor/
 ```
 
 Verify that the directory contains:
@@ -565,7 +565,7 @@ config.pl
 Run:
 
 ```bash
-sudo chmod +x /usr/share/webmin/homelab-monitoring/index.cgi
+sudo chmod +x /usr/share/webmin/webmin-homelab-monitor/index.cgi
 ```
 
 ---
@@ -575,7 +575,7 @@ sudo chmod +x /usr/share/webmin/homelab-monitoring/index.cgi
 Run:
 
 ```bash
-perl -c /usr/share/webmin/homelab-monitoring/index.cgi
+perl -c /usr/share/webmin/webmin-homelab-monitor/index.cgi
 ```
 
 Correct any reported syntax errors before restarting Webmin.

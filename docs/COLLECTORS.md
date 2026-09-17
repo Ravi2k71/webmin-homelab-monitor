@@ -1123,7 +1123,7 @@ perl -c index.cgi
 or, after installation:
 
 ```bash
-perl -c /usr/share/webmin/homelab-monitoring/index.cgi
+perl -c /usr/share/webmin/webmin-homelab-monitor/index.cgi
 ```
 
 A successful result should show:

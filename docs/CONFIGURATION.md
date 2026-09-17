@@ -29,7 +29,7 @@ as a safe starting point.
 After installing the module, copy the example configuration:
 
 ```bash
-cd /usr/share/webmin/homelab-monitoring
+cd /usr/share/webmin/webmin-homelab-monitor
 sudo cp config.pl.example config.pl
 ```
 
@@ -1001,7 +1001,7 @@ to make sure your real configuration is not being added accidentally.
 After changing `config.pl`, first check the main CGI syntax:
 
 ```bash
-perl -c /usr/share/webmin/homelab-monitoring/index.cgi
+perl -c /usr/share/webmin/webmin-homelab-monitor/index.cgi
 ```
 
 You should see:

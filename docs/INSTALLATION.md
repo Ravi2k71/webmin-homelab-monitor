@@ -87,19 +87,19 @@ A typical Webmin installation stores modules under:
 Create the module directory:
 
 ```bash
-sudo mkdir -p /usr/share/webmin/homelab-monitoring
+sudo mkdir -p /usr/share/webmin/webmin-homelab-monitor
 ```
 
 Then copy the module files:
 
 ```bash
-sudo cp module/* /usr/share/webmin/homelab-monitoring/
+sudo cp module/* /usr/share/webmin/webmin-homelab-monitor/
 ```
 
 After copying, the directory should contain:
 
 ```text
-/usr/share/webmin/homelab-monitoring/
+/usr/share/webmin/webmin-homelab-monitor/
 ├── index.cgi
 ├── module.info
 └── config.pl.example
@@ -112,7 +112,7 @@ After copying, the directory should contain:
 Change into the module directory:
 
 ```bash
-cd /usr/share/webmin/homelab-monitoring
+cd /usr/share/webmin/webmin-homelab-monitor
 ```
 
 Copy the example configuration:
@@ -183,13 +183,13 @@ for full configuration documentation.
 Set the executable bit:
 
 ```bash
-sudo chmod +x /usr/share/webmin/homelab-monitoring/index.cgi
+sudo chmod +x /usr/share/webmin/webmin-homelab-monitor/index.cgi
 ```
 
 You can verify it with:
 
 ```bash
-ls -l /usr/share/webmin/homelab-monitoring/index.cgi
+ls -l /usr/share/webmin/webmin-homelab-monitor/index.cgi
 ```
 
 You should see executable permissions similar to:
@@ -205,13 +205,13 @@ You should see executable permissions similar to:
 Before opening the module in Webmin, validate the CGI:
 
 ```bash
-perl -c /usr/share/webmin/homelab-monitoring/index.cgi
+perl -c /usr/share/webmin/webmin-homelab-monitor/index.cgi
 ```
 
 A successful result should look similar to:
 
 ```text
-/usr/share/webmin/homelab-monitoring/index.cgi syntax OK
+/usr/share/webmin/webmin-homelab-monitor/index.cgi syntax OK
 ```
 
 If you see an error, fix it before continuing.
@@ -789,7 +789,7 @@ Overall Health: Unknown
 A typical module directory might look similar to:
 
 ```bash
-ls -la /usr/share/webmin/homelab-monitoring
+ls -la /usr/share/webmin/webmin-homelab-monitor
 ```
 
 Example:
@@ -890,8 +890,8 @@ Example:
 
 ```bash
 sudo cp -a \
-/usr/share/webmin/homelab-monitoring \
-/usr/share/webmin/homelab-monitoring.backup
+/usr/share/webmin/webmin-homelab-monitor \
+/usr/share/webmin/webmin-homelab-monitor.backup
 ```
 
 Then copy the updated module files.
@@ -907,7 +907,7 @@ without reviewing the changes first.
 After updating:
 
 ```bash
-perl -c /usr/share/webmin/homelab-monitoring/index.cgi
+perl -c /usr/share/webmin/webmin-homelab-monitor/index.cgi
 ```
 
 Then restart Webmin if needed:
@@ -937,7 +937,7 @@ If the module does not work, check these in order:
 Useful commands:
 
 ```bash
-perl -c /usr/share/webmin/homelab-monitoring/index.cgi
+perl -c /usr/share/webmin/webmin-homelab-monitor/index.cgi
 ```
 
 ```bash
@@ -945,7 +945,7 @@ sudo systemctl status webmin
 ```
 
 ```bash
-ls -la /usr/share/webmin/homelab-monitoring
+ls -la /usr/share/webmin/webmin-homelab-monitor
 ```
 
 ```bash
