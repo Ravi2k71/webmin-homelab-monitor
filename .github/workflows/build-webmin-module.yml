@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare module directory
         run: |
@@ -32,7 +32,7 @@ jobs:
           tar -tzf build/webmin-homelab-monitor-1.0.wbm.gz
 
       - name: Upload package artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: webmin-homelab-monitor-1.0
           path: build/webmin-homelab-monitor-1.0.wbm.gz
