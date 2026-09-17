@@ -498,35 +498,19 @@ If using Tailscale or another private networking solution, Webmin can be limited
 
 ---
 
-## Important Security Warning
+## Security Notes
 
-Never commit:
+This project may display system and network information from your server.
 
-- Private SSH keys
-- Passwords
-- API tokens
-- Authentication cookies
-- Real private configuration files
-- Private certificates or private key material
-- Sensitive backup paths
-- Internal hostnames you do not want public
-- Production credentials
+Before publishing your configuration or modifications:
 
-The repository intentionally ignores:
+- Do not commit passwords, API tokens, SSH private keys, or private key material
+- Keep your real `config.pl` out of Git
+- Review hostnames, IP addresses, storage paths, and service names before publishing
+- Keep Webmin protected with HTTPS and appropriate access controls
+- Review any custom commands or collectors you add
 
-```text
-config.pl
-```
-
-so your real server configuration does not need to be committed.
-
-Before publishing changes, always review:
-
-```bash
-git status
-```
-
-and inspect the files being committed.
+The included `.gitignore` is intended to help keep local configuration files out of the repository.
 
 ---
 
