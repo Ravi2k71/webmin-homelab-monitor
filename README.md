@@ -206,7 +206,7 @@ sudo cp module/* /usr/share/webmin/webmin-homelab-monitor/
 Copy the example configuration:
 
 ```bash
-cd /usr/share/webmin/homelab-monitoring
+cd /usr/share/webmin/webmin-homelab-monitor/
 sudo cp config.pl.example config.pl
 ```
 
@@ -254,7 +254,7 @@ Your actual values will depend on your system.
 ### 4. Make the CGI Executable
 
 ```bash
-sudo chmod +x /usr/share/webmin/homelab-monitoring/index.cgi
+sudo chmod +x /usr/share/webmin/webmin-homelab-monitor/index.cgi
 ```
 
 ---
@@ -264,7 +264,7 @@ sudo chmod +x /usr/share/webmin/homelab-monitoring/index.cgi
 Before opening the module in Webmin, verify the CGI file:
 
 ```bash
-perl -c /usr/share/webmin/homelab-monitoring/index.cgi
+perl -c //usr/share/webmin/webmin-homelab-monitor/index.cgi
 ```
 
 A successful result should look similar to:
