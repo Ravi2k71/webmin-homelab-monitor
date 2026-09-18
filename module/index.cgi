@@ -10,8 +10,26 @@ use lib "/usr/libexec/webmin";
 use lib "/usr/share/webmin";
 
 use WebminCore;
-use File::Basename qw(dirname);
-use Cwd qw(abs_path);
+our %config;
+our $module_root_directory;
+
+init_config();
+
+# Prefer a local config.pl in the module directory.
+# If it does not exist, fall back to config.pl.example.
+my $config_file = "$module_root_directory/config.pl";
+my $using_example_config = 0;
+
+if (!-f $config_file) {
+    $config_file = "$module_root_directory/config.pl.example";
+    $using_example_config = 1;
+}
+
+if (!-f $config_file) {
+    die "No configuration file found in $module_root_directory. Expected config.pl or config.pl.example.\n";
+}
+
+require $config_file;
 
 our %config;
 
