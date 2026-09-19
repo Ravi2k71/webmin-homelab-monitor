@@ -9,7 +9,7 @@ use warnings;
 use lib "/usr/libexec/webmin";
 use lib "/usr/share/webmin";
 
-use WebminCore;
+
 
 init_config();
 
@@ -22,7 +22,7 @@ init_config();
 # an HTTP 500 error.
 # Determine the directory containing this module.
 
-require $config_file;
+
 
 sub read_cpu {
     open(my $fh, '<', '/proc/stat') or return undef;
