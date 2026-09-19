@@ -14,25 +14,46 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
+      - name: Syntax-check Perl with a WebminCore stub
+        run: |
+          mkdir -p build/testlib
+          cat > build/testlib/WebminCore.pm <<'PERL'
+          package WebminCore;
+          use strict;
+          use warnings;
+          use Exporter 'import';
+          our @EXPORT = qw(init_config ui_print_header ui_print_footer);
+          sub init_config { }
+          sub ui_print_header { }
+          sub ui_print_footer { }
+          1;
+          PERL
+          PERL5LIB="$PWD/build/testlib" perl -c module/index.cgi
+
+      - name: Read module version
+        id: version
+        run: |
+          VERSION="$(awk -F= '$1 == "version" { print $2 }' module/module.info)"
+          test -n "$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Prepare module directory
         run: |
           mkdir -p build/webmin-homelab-monitor
-          cp module/index.cgi build/webmin-homelab-monitor/
-          cp module/module.info build/webmin-homelab-monitor/
-          cp module/config.pl.example build/webmin-homelab-monitor/
+          cp -a module/. build/webmin-homelab-monitor/
           chmod +x build/webmin-homelab-monitor/index.cgi
 
       - name: Build Webmin module package
         run: |
           cd build
-          tar -czf webmin-homelab-monitor-1.0.wbm.gz webmin-homelab-monitor
+          tar -czf "webmin-homelab-monitor-${{ steps.version.outputs.version }}.wbm.gz" webmin-homelab-monitor
 
       - name: Verify archive contents
         run: |
-          tar -tzf build/webmin-homelab-monitor-1.0.wbm.gz
+          tar -tzf "build/webmin-homelab-monitor-${{ steps.version.outputs.version }}.wbm.gz"
 
       - name: Upload package artifact
         uses: actions/upload-artifact@v6
         with:
-          name: webmin-homelab-monitor-1.0
-          path: build/webmin-homelab-monitor-1.0.wbm.gz
+          name: webmin-homelab-monitor-${{ steps.version.outputs.version }}
+          path: build/webmin-homelab-monitor-${{ steps.version.outputs.version }}.wbm.gz
