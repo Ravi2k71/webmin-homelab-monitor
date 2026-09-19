@@ -10,28 +10,6 @@ use lib "/usr/libexec/webmin";
 use lib "/usr/share/webmin";
 
 use WebminCore;
-our %config;
-our $module_root_directory;
-
-init_config();
-
-# Prefer a local config.pl in the module directory.
-# If it does not exist, fall back to config.pl.example.
-my $config_file = "$module_root_directory/config.pl";
-my $using_example_config = 0;
-
-if (!-f $config_file) {
-    $config_file = "$module_root_directory/config.pl.example";
-    $using_example_config = 1;
-}
-
-if (!-f $config_file) {
-    die "No configuration file found in $module_root_directory. Expected config.pl or config.pl.example.\n";
-}
-
-require $config_file;
-
-our %config;
 
 init_config();
 
@@ -43,22 +21,6 @@ init_config();
 # fall back to config.pl.example so the module can load without returning
 # an HTTP 500 error.
 # Determine the directory containing this module.
-# Using __FILE__ is more reliable than FindBin when running inside Webmin.
-my $module_dir = dirname(abs_path(__FILE__));
-
-# Prefer the user's local config.pl.
-# On a fresh installation, fall back to config.pl.example.
-my $config_file = "$module_dir/config.pl";
-my $using_example_config = 0;
-
-if (!-f $config_file) {
-    $config_file = "$module_dir/config.pl.example";
-    $using_example_config = 1;
-}
-
-if (!-f $config_file) {
-    die "No configuration file found in $module_dir. Expected config.pl or config.pl.example.\n";
-}
 
 require $config_file;
 
