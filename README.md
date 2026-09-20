@@ -17,6 +17,16 @@ Want to see the dashboard before installing it?
 The demo uses fictional example data and does **not** connect to a real server.
 
 ---
+## Download
+
+The latest installable Webmin module is available from the GitHub Releases page.
+
+**[Download the latest release](https://github.com/Ravi2k71/webmin-homelab-monitor/releases/latest)**
+
+Download the file ending in:
+
+```text
+.wbm.gz
 
 ## Features
 
