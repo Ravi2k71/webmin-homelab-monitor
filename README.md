@@ -24,8 +24,6 @@ The latest installable Webmin module is available from the GitHub Releases page.
 **[Download the latest release](https://github.com/Ravi2k71/webmin-homelab-monitor/releases/latest)**
 
 Download the file ending in:
-
-```text
 .wbm.gz
 
 ## Features
