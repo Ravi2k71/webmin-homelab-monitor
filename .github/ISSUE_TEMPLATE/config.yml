@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Webmin Homelab Monitor Documentation
+    url: https://github.com/Ravi2k71/webmin-homelab-monitor#readme
+    about: Check the documentation before opening an issue.
+
+  - name: Live Demo
+    url: https://ravi2k71.github.io/webmin-homelab-monitor/
+    about: View the static demo of Webmin Homelab Monitor.
