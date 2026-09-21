@@ -1,0 +1,77 @@
+name: Feature Request
+description: Suggest an improvement or new collector
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement to Webmin Homelab Monitor.
+
+        The project is intended to be customizable, so ideas for new collectors,
+        integrations, dashboard improvements, and compatibility are welcome.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature category
+      options:
+        - New collector
+        - Dashboard/UI
+        - Hardware monitoring
+        - Storage
+        - Networking
+        - Security
+        - Backups
+        - Docker/containers
+        - Tailscale
+        - Webmin integration
+        - Configuration
+        - Documentation
+        - Installation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the use case or limitation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Suggested solution
+      description: Describe how you think the feature could work.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Are there other ways to accomplish the same thing?
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Example environment
+      description: |
+        If relevant, describe the hardware, service, storage system,
+        Linux distribution, or software this feature would support.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional information
+      description: Add examples, screenshots, documentation links, or other context.
+    validations:
+      required: false
